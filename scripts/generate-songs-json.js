@@ -37,7 +37,7 @@ function getFolders(dir, relDir = "") {
   }).filter(Boolean);
 }
 
-const root = getAudioFiles(".", "");
+const root = getAudioFiles(".", "songs");
 const folders = getFolders(".");
 
 fs.writeFileSync("songs.json", JSON.stringify({ root, folders }, null, 2));
