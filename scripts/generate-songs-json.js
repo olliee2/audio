@@ -12,7 +12,7 @@ function formatSongName(filename) {
   return withSpaces.replace(/\b\w/g, c => c.toUpperCase());
 }
 
-async function getAudioFiles(dir, relDir = "") {
+async function getAudioFiles(dir) {
   const files = fs.readdirSync(dir).filter(file => {
     const filePath = path.join(dir, file);
     return fs.statSync(filePath).isFile() && audioExtensions.includes(path.extname(file));
@@ -46,7 +46,7 @@ async function getFolders(dir, relDir = "") {
   return await Promise.all(entries.map(async folder => {
     const folderPath = path.join(dir, folder);
     const folderRel = relDir ? relDir + "/" + folder : folder;
-    const files = await getAudioFiles(folderPath, folderRel);
+    const files = await getAudioFiles(folderPath);
     const subfolders = await getFolders(folderPath, folderRel);
     return {
       name: folder,
@@ -58,7 +58,7 @@ async function getFolders(dir, relDir = "") {
 
 (async () => {
   const name = "root";
-  const files = await getAudioFiles("./songs", "songs");
+  const files = await getAudioFiles("./songs");
   const folders = await getFolders("./songs");
 
   fs.writeFileSync("songs.json", JSON.stringify({name, files, folders}, null, 2));
