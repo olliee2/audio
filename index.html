@@ -10,5 +10,20 @@
     corresponding songs.json describing the structure of the repository, so that the songs can be used
     programmatically.</p>
 <a href="https://github.com/olliee2/audio">Visit the GitHub repository</a>
+<ul id="song-tree"></ul>
+<script>
+  const songTree = document.getElementById("song-tree");
+  try {
+    const response = await fetch("songs.json");
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+    }
+
+    const json = await response.json();
+    console.log(json);
+  } catch (error) {
+    console.error(error.message);
+  }
+</script>
 </body>
 </html>
