@@ -30,7 +30,7 @@
     function displaySongs(json) {
       console.log(json);
       const ul = document.createElement("ul");
-      const files = json.files;
+      const files = json.files.sort((a, b) => a.duration - b.duration);
       for (const file of files) {
         console.log(file);
         const li = document.createElement("li");
@@ -38,7 +38,7 @@
         a.href = file.url;
         const minutes = Math.floor(file.duration / 60);
         const seconds = file.duration % 60;
-        a.textContent = `${minutes ? minutes + "m" : ""}${seconds}s: ${file.name}`;
+        a.textContent = `${minutes ? minutes + "m" : ""}${seconds}s ${file.name}`;
         a.target = "_blank";
         li.append(a);
         ul.append(li);
