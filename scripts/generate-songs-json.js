@@ -26,9 +26,13 @@ async function getAudioFiles(dir, relDir = "") {
     } catch (e) {
       duration = null;
     }
+    // Calculate the relative path from the 'songs' directory for the URL
+    const absoluteFilePath = path.resolve(dir, file);
+    const songsRoot = path.resolve("./songs");
+    const relativePath = path.relative(songsRoot, absoluteFilePath).replace(/\\/g, "/");
     return {
       name: formatSongName(file),
-      url: baseUrl + (relDir ? relDir + "/" : "") + file,
+      url: baseUrl + "songs/" + relativePath,
       duration
     };
   }));
@@ -39,22 +43,23 @@ async function getFolders(dir, relDir = "") {
     const filePath = path.join(dir, file);
     return fs.statSync(filePath).isDirectory();
   });
-  const results = await Promise.all(entries.map(async folder => {
+  return await Promise.all(entries.map(async folder => {
     const folderPath = path.join(dir, folder);
     const folderRel = relDir ? relDir + "/" + folder : folder;
     const files = await getAudioFiles(folderPath, folderRel);
     const subfolders = await getFolders(folderPath, folderRel);
-    if (files.length === 0 && subfolders.length === 0) return null;
-    const result = {name: folder, files};
-    if (subfolders.length > 0) result.folders = subfolders;
-    return result;
+    return {
+      name: folder,
+      files,
+      folders: subfolders.length > 0 ? subfolders : []
+    };
   }));
-  return results.filter(Boolean);
 }
 
 (async () => {
-  const root = await getAudioFiles("./songs", "songs");
+  const name = "root";
+  const files = await getAudioFiles("./songs", "songs");
   const folders = await getFolders("./songs");
 
-  fs.writeFileSync("songs.json", JSON.stringify({root, folders}, null, 2));
+  fs.writeFileSync("songs.json", JSON.stringify({name, files, folders}, null, 2));
 })();

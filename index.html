@@ -10,20 +10,49 @@
     corresponding songs.json describing the structure of the repository, so that the songs can be used
     programmatically.</p>
 <a href="https://github.com/olliee2/audio">Visit the GitHub repository</a>
-<ul id="song-tree"></ul>
+<div id="song-tree"></div>
 <script>
-  const songTree = document.getElementById("song-tree");
-  try {
-    const response = await fetch("songs.json");
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
+  (async () => {
+    const songTree = document.getElementById("song-tree");
+    try {
+      const response = await fetch("songs.json");
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+
+      const json = await response.json();
+      console.log(json);
+      songTree.append(displaySongs(json));
+    } catch (error) {
+      console.error(error.message);
     }
 
-    const json = await response.json();
-    console.log(json);
-  } catch (error) {
-    console.error(error.message);
-  }
+    function displaySongs(json) {
+      console.log(json);
+      const ul = document.createElement("ul");
+      const files = json.files;
+      for (const file of files) {
+        console.log(file);
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = file.url;
+        a.textContent = `${file.name}: ${file.duration}`;
+        li.append(a);
+        ul.append(li);
+      }
+      const folders = json.folders;
+      for (const folder of folders) {
+        console.log(folder);
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = folder.name;
+        li.appendChild(span);
+        li.append(displaySongs(folder));
+        ul.append(li);
+      }
+      return ul;
+    }
+  })();
 </script>
 </body>
 </html>
