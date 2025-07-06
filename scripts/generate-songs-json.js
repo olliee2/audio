@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const mm = require("music-metadata");
 
 const audioExtensions = [".mp3", ".ogg", ".flac", ".wav"];
 const baseUrl = "https://olliee2.github.io/audio/";
@@ -11,33 +12,49 @@ function formatSongName(filename) {
   return withSpaces.replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function getAudioFiles(dir, relDir = "") {
-  return fs.readdirSync(dir).filter(file => {
+async function getAudioFiles(dir, relDir = "") {
+  const files = fs.readdirSync(dir).filter(file => {
     const filePath = path.join(dir, file);
     return fs.statSync(filePath).isFile() && audioExtensions.includes(path.extname(file));
-  }).map(file => ({
-    name: formatSongName(file),
-    url: baseUrl + (relDir ? relDir + "/" : "") + file
+  });
+  return await Promise.all(files.map(async file => {
+    const filePath = path.join(dir, file);
+    let duration;
+    try {
+      const metadata = await mm.parseFile(filePath);
+      duration = metadata.format.duration ? Math.round(metadata.format.duration) : null;
+    } catch (e) {
+      duration = null;
+    }
+    return {
+      name: formatSongName(file),
+      url: baseUrl + (relDir ? relDir + "/" : "") + file,
+      duration
+    };
   }));
 }
 
-function getFolders(dir, relDir = "") {
-  return fs.readdirSync(dir).filter(file => {
+async function getFolders(dir, relDir = "") {
+  const entries = fs.readdirSync(dir).filter(file => {
     const filePath = path.join(dir, file);
     return fs.statSync(filePath).isDirectory();
-  }).map(folder => {
+  });
+  const results = await Promise.all(entries.map(async folder => {
     const folderPath = path.join(dir, folder);
     const folderRel = relDir ? relDir + "/" + folder : folder;
-    const files = getAudioFiles(folderPath, folderRel);
-    const subfolders = getFolders(folderPath, folderRel);
+    const files = await getAudioFiles(folderPath, folderRel);
+    const subfolders = await getFolders(folderPath, folderRel);
     if (files.length === 0 && subfolders.length === 0) return null;
-    const result = { name: folder, files };
+    const result = {name: folder, files};
     if (subfolders.length > 0) result.folders = subfolders;
     return result;
-  }).filter(Boolean);
+  }));
+  return results.filter(Boolean);
 }
 
-const root = getAudioFiles(".", "songs");
-const folders = getFolders(".");
+(async () => {
+  const root = await getAudioFiles("./songs", "songs");
+  const folders = await getFolders("./songs");
 
-fs.writeFileSync("songs.json", JSON.stringify({ root, folders }, null, 2));
+  fs.writeFileSync("songs.json", JSON.stringify({root, folders}, null, 2));
+})();
