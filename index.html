@@ -36,7 +36,10 @@
         const li = document.createElement("li");
         const a = document.createElement("a");
         a.href = file.url;
-        a.textContent = `${file.name}: ${file.duration}`;
+        const minutes = Math.floor(file.duration / 60);
+        const seconds = file.duration % 60;
+        a.textContent = `${minutes ? minutes + "m" : ""}${seconds}s: ${file.name}`;
+        a.target = "_blank";
         li.append(a);
         ul.append(li);
       }
