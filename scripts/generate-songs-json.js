@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const mm = require("music-metadata");
+// swapping over to ogg instead of mp3
 
 const audioExtensions = [".mp3", ".ogg", ".flac", ".wav"];
 const baseUrl = "https://olliee2.github.io/audio/";
