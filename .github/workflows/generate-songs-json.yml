@@ -6,7 +6,9 @@ on:
       - main
     paths:
       - '**/*.mp3'
+      - '**/*.ogg'
       - '**/*.wav'
+      - '**/*.flac'
 
 jobs:
   generate-songs-json:
