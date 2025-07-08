@@ -67,7 +67,7 @@ async function getFolders(dir) {
   const files = await getAudioFiles("./songs");
   const folders = await getFolders("./songs");
 
-  console.log({name, files, folders});
+  console.log(JSON.stringify({name, files, folders}));
 
   fs.writeFileSync("songs.json", JSON.stringify({name, files, folders}, null, 2),);
 })();
